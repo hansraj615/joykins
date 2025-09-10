@@ -130,9 +130,9 @@ return [
         'core' => [
             'channels' => [
                 'name'             => 'Default',
-                'meta-title'       => 'Demo store',
-                'meta-keywords'    => 'Demo store meta keyword',
-                'meta-description' => 'Demo store meta description',
+                'meta-title'       => 'Joykins',
+                'meta-keywords'    => 'Joykins store meta keyword',
+                'meta-description' => 'Joykins store meta description',
             ],
 
             'currencies' => [

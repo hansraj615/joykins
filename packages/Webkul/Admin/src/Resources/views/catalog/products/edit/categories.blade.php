@@ -66,7 +66,7 @@
 
             methods: {
                 get() {
-                    axios.get("{{ route('admin.catalog.categories.tree') }}", { // Update this line
+                    this.$axios.get("{{ route('admin.catalog.categories.tree') }}", {
                             params: {
                                 channel: "{{ $currentChannel->code }}",
                             }
