@@ -5,10 +5,10 @@ return [
         'forgot-password' => [
             'already-sent'         => 'Ya se envió el correo de restablecimiento de contraseña.',
             'back'                 => 'Volver a iniciar sesión',
-            'bagisto'              => 'Bagisto',
+            'bagisto'              => 'Joykins',
             'email'                => 'Correo electrónico',
             'email-not-exist'      => 'No podemos encontrar un usuario con esa dirección de correo electrónico.',
-            'footer'               => '© Derechos de autor 2010 - :current_year, Webkul Software (Registrado en India). Todos los derechos reservados.',
+            'footer'               => '© Derechos de autor 2024 - :current_year, Joykins.com (Registrado en India). Todos los derechos reservados.',
             'forgot-password-text' => 'Si olvidó su contraseña, recupérela ingresando su dirección de correo electrónico.',
             'page-title'           => '¿Olvidó su contraseña?',
             'reset-link-sent'      => 'Hemos enviado por correo electrónico el enlace para restablecer su contraseña.',
@@ -19,10 +19,10 @@ return [
 
         'reset-password' => [
             'back-link-title'  => 'Volver a Iniciar Sesión',
-            'bagisto'          => 'Bagisto',
+            'bagisto'          => 'Joykins',
             'confirm-password' => 'Confirmar Contraseña',
             'email'            => 'Correo Electrónico Registrado',
-            'footer'           => '© Derechos de autor 2010 - :current_year, Webkul Software (Registrada en India). Todos los derechos reservados.',
+            'footer'           => '© Derechos de autor 2024 - :current_year, Joykins.com (Registrada en India). Todos los derechos reservados.',
             'password'         => 'Contraseña',
             'submit-btn-title' => 'Restablecer Contraseña',
             'title'            => 'Restablecer Contraseña',
@@ -48,13 +48,13 @@ return [
 
         'signup-form' => [
             'account-exists'              => '¿Ya tienes una cuenta?',
-            'bagisto'                     => 'Bagisto',
+            'bagisto'                     => 'Joykins',
             'button-title'                => 'Registrarse',
             'click-here'                  => 'Haga clic aquí',
             'confirm-pass'                => 'Confirmar Contraseña',
             'email'                       => 'Correo Electrónico',
             'first-name'                  => 'Nombre',
-            'footer'                      => '© Derechos de autor 2010 - :current_year, Webkul Software (Registrada en India). Todos los derechos reservados.',
+            'footer'                      => '© Derechos de autor 2024 - :current_year, Joykins.com (Registrada en India). Todos los derechos reservados.',
             'form-signup-text'            => 'Si eres nuevo en nuestra tienda, estamos encantados de tenerte como miembro.',
             'last-name'                   => 'Apellido',
             'page-title'                  => 'Convertirse en Usuario',
