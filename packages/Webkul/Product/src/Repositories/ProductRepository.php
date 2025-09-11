@@ -253,6 +253,20 @@ class ProductRepository extends Repository
                         ->where('product_price_indices.customer_group_id', $customerGroup->id);
                 });
 
+            // Join approved reviews aggregate (avg rating, count) when needed (filtering or rating sort)
+            $sortOptionsPreview = product_toolbar()->getOrder($params);
+            $needsReviewJoin = ! empty($params['rating']) || (($sortOptionsPreview['sort'] ?? null) === 'rating');
+
+            if ($needsReviewJoin) {
+                $reviewAlias = 'product_review_stats';
+                $reviewsSubquery = "(SELECT product_id, AVG(rating) AS avg_rating, COUNT(*) AS review_count FROM product_reviews WHERE status = 'approved' GROUP BY product_id) as {$reviewAlias}";
+                $qb->leftJoin(DB::raw($reviewsSubquery), $reviewAlias.'.product_id', '=', 'products.id');
+
+                if (! empty($params['rating'])) {
+                    $qb->where($reviewAlias.'.avg_rating', '>=', (float) $params['rating']);
+                }
+            }
+
             if (! empty($params['category_id'])) {
                 $qb->leftJoin('product_categories', 'product_categories.product_id', '=', 'products.id')
                     ->whereIn('product_categories.category_id', explode(',', $params['category_id']));
@@ -394,36 +408,41 @@ class ProductRepository extends Repository
             $sortOptions = $this->getSortOptions($params);
 
             if ($sortOptions['order'] != 'rand') {
-                $attribute = $this->attributeRepository->findOneByField('code', $sortOptions['sort']);
-
-                if ($attribute) {
-                    if ($attribute->code === 'price') {
-                        $qb->orderBy('product_price_indices.min_price', $sortOptions['order']);
-                    } else {
-                        $alias = 'sort_product_attribute_values';
-
-                        $qb->leftJoin('product_attribute_values as '.$alias, function ($join) use ($alias, $attribute) {
-                            $join->on('products.id', '=', $alias.'.product_id')
-                                ->where($alias.'.attribute_id', $attribute->id);
-
-                            if ($attribute->value_per_channel) {
-                                if ($attribute->value_per_locale) {
-                                    $join->where($alias.'.channel', core()->getRequestedChannelCode())
-                                        ->where($alias.'.locale', core()->getRequestedLocaleCode());
-                                } else {
-                                    $join->where($alias.'.channel', core()->getRequestedChannelCode());
-                                }
-                            } else {
-                                if ($attribute->value_per_locale) {
-                                    $join->where($alias.'.locale', core()->getRequestedLocaleCode());
-                                }
-                            }
-                        })
-                            ->orderBy($alias.'.'.$attribute->column_name, $sortOptions['order']);
-                    }
+                // Special handling for rating sort (uses reviews aggregate)
+                if ($sortOptions['sort'] === 'rating') {
+                    // Default to 0 for products without reviews to maintain deterministic order
+                    $qb->orderByRaw("COALESCE(product_review_stats.avg_rating, 0) ".$sortOptions['order']);
                 } else {
-                    /* `created_at` is not an attribute so it will be in else case */
-                    $qb->orderBy('products.created_at', $sortOptions['order']);
+                    $attribute = $this->attributeRepository->findOneByField('code', $sortOptions['sort']);
+                    if ($attribute) {
+                        if ($attribute->code === 'price') {
+                            $qb->orderBy('product_price_indices.min_price', $sortOptions['order']);
+                        } else {
+                            $alias = 'sort_product_attribute_values';
+
+                            $qb->leftJoin('product_attribute_values as '.$alias, function ($join) use ($alias, $attribute) {
+                                $join->on('products.id', '=', $alias.'.product_id')
+                                    ->where($alias.'.attribute_id', $attribute->id);
+
+                                if ($attribute->value_per_channel) {
+                                    if ($attribute->value_per_locale) {
+                                        $join->where($alias.'.channel', core()->getRequestedChannelCode())
+                                            ->where($alias.'.locale', core()->getRequestedLocaleCode());
+                                    } else {
+                                        $join->where($alias.'.channel', core()->getRequestedChannelCode());
+                                    }
+                                } else {
+                                    if ($attribute->value_per_locale) {
+                                        $join->where($alias.'.locale', core()->getRequestedLocaleCode());
+                                    }
+                                }
+                            })
+                                ->orderBy($alias.'.'.$attribute->column_name, $sortOptions['order']);
+                        }
+                    } else {
+                        /* `created_at` is not an attribute so it will be in else case */
+                        $qb->orderBy('products.created_at', $sortOptions['order']);
+                    }
                 }
             } else {
                 return $qb->inRandomOrder();
@@ -470,7 +489,7 @@ class ProductRepository extends Repository
             'variants.attribute_values',
             'variants.price_indices',
             'variants.inventory_indices',
-        ])->scopeQuery(function ($query) use ($params, $indices) {
+        ])->scopeQuery(function ($query) use ($params, $indices, $sortOptions) {
             $qb = $query->distinct()
                 ->whereIn('products.id', $indices['ids']);
 
@@ -483,7 +502,25 @@ class ProductRepository extends Repository
                     ->whereNull('product_customizable_options.id');
             }
 
-            $qb->orderBy(DB::raw('FIELD(id, '.implode(',', $indices['ids']).')'));
+            // Join and filter/sort by rating as needed
+            $needsReviewJoin = ! empty($params['rating']) || (($sortOptions['sort'] ?? null) === 'rating');
+            if ($needsReviewJoin) {
+                $reviewAlias = 'product_review_stats';
+                $reviewsSubquery = "(SELECT product_id, AVG(rating) AS avg_rating, COUNT(*) AS review_count FROM product_reviews WHERE status = 'approved' GROUP BY product_id) as {$reviewAlias}";
+                $qb->leftJoin(DB::raw($reviewsSubquery), $reviewAlias.'.product_id', '=', 'products.id');
+
+                if (! empty($params['rating'])) {
+                    $qb->where($reviewAlias.'.avg_rating', '>=', (float) $params['rating']);
+                }
+
+                if (($sortOptions['sort'] ?? null) === 'rating') {
+                    $qb->orderByRaw("COALESCE({$reviewAlias}.avg_rating, 0) ".$sortOptions['order']);
+                } else {
+                    $qb->orderBy(DB::raw('FIELD(id, '.implode(',', $indices['ids']).')'));
+                }
+            } else {
+                $qb->orderBy(DB::raw('FIELD(id, '.implode(',', $indices['ids']).')'));
+            }
 
             return $qb;
         });

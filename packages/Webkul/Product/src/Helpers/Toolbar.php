@@ -27,6 +27,13 @@ class Toolbar
                 'position' => 2,
             ],
             [
+                'title'    => trans('product::app.sort-by.options.highest-rated'),
+                'value'    => 'rating-desc',
+                'sort'     => 'rating',
+                'order'    => 'desc',
+                'position' => 2.5,
+            ],
+            [
                 'title'    => trans('product::app.sort-by.options.latest-first'),
                 'value'    => 'created_at-desc',
                 'sort'     => 'created_at',
@@ -53,6 +60,13 @@ class Toolbar
                 'sort'     => 'price',
                 'order'    => 'desc',
                 'position' => 6,
+            ],
+            [
+                'title'    => trans('product::app.sort-by.options.lowest-rated'),
+                'value'    => 'rating-asc',
+                'sort'     => 'rating',
+                'order'    => 'asc',
+                'position' => 6.5,
             ],
         ]);
     }

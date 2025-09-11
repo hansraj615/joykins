@@ -33,6 +33,8 @@ return [
             'from-z-a'        => 'From Z-A',
             'latest-first'    => 'Newest First',
             'oldest-first'    => 'Oldest First',
+            'highest-rated'   => 'Highest Rated',
+            'lowest-rated'    => 'Lowest Rated',
         ],
     ],
 
